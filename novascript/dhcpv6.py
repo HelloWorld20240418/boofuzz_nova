@@ -1,0 +1,160 @@
+interface_port=''
+src_ip = []
+
+
+def fuzzing_main():
+    session = Session(target=Target(connection=RawL3SocketConnection(interface=interface_port, ethernet_proto=0x86dd)), nova_session_param=nova_session_param)
+    fuzzing_Solicit(session=session)
+    fuzzing_Request_XID(session=session)
+    fuzzing_Release_XID(session=session)
+    session.fuzz()
+
+
+def fuzzing_Solicit(session):
+    s_initialize(name="Solicit")
+    with s_block("IPv6"):
+        s_bytes(value=bytes([0x60]), size=1, max_len=1, name='Version', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x00, 0x00]), size=3, max_len=3, name='Traffic label', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x3c]), size=2, max_len=2, name='Payload Length', fuzzable=False)
+        s_bytes(value=bytes([0x11]), size=2, max_len=2, name='Next Header', fuzzable=False)
+        s_bytes(value=bytes([0x01]), size=1, max_len=1, name='Hop Limit', fuzzable=False)
+        s_bytes(value=bytes(src_ip), size=16, max_len=16, name='Source Address', fuzzable=False)
+        s_bytes(value=bytes([0xff,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x02]), size=16, max_len=16, name='Destination Address', fuzzable=False)
+    with s_block("UDP"):
+        s_bytes(value=bytes([0x02, 0x22]), size=2, max_len=2, name='src_port', fuzzable=False)
+        s_bytes(value=bytes([0x02, 0x23]), size=2, max_len=2, name='dst_port', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x3c]), size=2, max_len=2, name='length', fuzzable=False)
+        s_bytes(value=bytes([0xad, 0x08]), size=2, max_len=2, name='checksum', fuzzable=False)
+    with s_block(("DHCPv6")):
+        s_bytes(value=bytes([0x01]), size=1, max_len=1, name='Message_type', fuzzable=False)
+        s_bytes(value=bytes([0x10,0x08,0x74]), size=3, max_len=3, name='Transation_ID', fuzzable=False)
+        s_bytes(value=bytes([0x00,0x01]), size=2, max_len=2, name='option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x0e]), size=2, max_len=2, name='length', fuzzable=False)
+        s_bytes(value=bytes([0x00,0x01]), size=2, max_len=2, name='DUID_Type', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x01]), size=2, max_len=2, name='Hardware_type', fuzzable=False)
+        s_bytes(value=bytes([0x1c,0x39,0xcf,0x88]), size=4, max_len=4, name='DUID_Time', fuzzable=False)
+        s_bytes(value=bytes([0x08, 0x00, 0x27, 0xfe,0x8f,0x95]), size=6, max_len=6, name='Link_layer_address', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x06]), size=2, max_len=2, name='option_request_option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x04]), size=2, max_len=2, name='option_request_length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x17]), size=2, max_len=2, name='Requested_Option_code', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x18]), size=2, max_len=2, name='Requested_Option_code1', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x08]), size=2, max_len=2, name='option_elapsed_time', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x02]), size=2, max_len=2, name='elapsed_time_length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x00]), size=2, max_len=2, name='Elapsed_time', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x19]), size=2, max_len=2, name='IAfPD_option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x0c]), size=2, max_len=2, name='IAfPD_length', fuzzable=False)
+        s_bytes(value=bytes([0x27, 0xfe,0x8f,0x95]), size=4, max_len=4, name='IAfPD_IAID', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x00,0x0e,0x10]), size=4, max_len=4, name='IAfPD_T1', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x00, 0x15, 0x18]), size=4, max_len=4, name='IAfPD_T2', fuzzable=True)
+    session.connect(s_get('Solicit'))
+
+def fuzzing_Request_XID(session):
+    s_initialize(name="Request_XID")
+    with s_block("IPv6"):
+        s_bytes(value=bytes([0x60]), size=1, max_len=1, name='Version', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x00, 0x00]), size=3, max_len=3, name='Traffic label', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x6b]), size=2, max_len=2, name='Payload Length', fuzzable=False)
+        s_bytes(value=bytes([0x11]), size=2, max_len=2, name='Next Header', fuzzable=False)
+        s_bytes(value=bytes([0x01]), size=1, max_len=1, name='Hop Limit', fuzzable=False)
+        s_bytes(value=bytes(src_ip), size=16, max_len=16, name='Source Address', fuzzable=False)
+        s_bytes(value=bytes([0xff,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x02]), size=16, max_len=16, name='Destination Address', fuzzable=True)
+    with s_block("UDP"):
+        s_bytes(value=bytes([0x02, 0x22]), size=2, max_len=2, name='src_port', fuzzable=False)
+        s_bytes(value=bytes([0x02, 0x23]), size=2, max_len=2, name='dst_port', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x6b]), size=2, max_len=2, name='length', fuzzable=False)
+        s_bytes(value=bytes([0x9c, 0xfb]), size=2, max_len=2, name='checksum', fuzzable=False)
+    with s_block(("DHCPv6")):
+        s_bytes(value=bytes([0x03]), size=1, max_len=1, name='Message_type', fuzzable=False)
+        s_bytes(value=bytes([0x49,0x17,0x4e]), size=3, max_len=3, name='Transation_ID', fuzzable=False)
+        s_bytes(value=bytes([0x00,0x01]), size=2, max_len=2, name='option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x0e]), size=2, max_len=2, name='length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x01]), size=2, max_len=2, name='DUID_Type', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x01]), size=2, max_len=2, name='Hardware_type', fuzzable=False)
+        s_bytes(value=bytes([0x1c, 0x39, 0xcf, 0x88]), size=4, max_len=4, name='DUID_Time', fuzzable=False)
+        s_bytes(value=bytes([0x08, 0x00, 0x27, 0xfe, 0x8f, 0x95]), size=6, max_len=6, name='Link_layer_address',
+                fuzzable=True)
+        #server_identifier
+        s_bytes(value=bytes([0x00, 0x02]), size=2, max_len=2, name='Server_option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x0e]), size=2, max_len=2, name='Server_length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x01]), size=2, max_len=2, name='Server_DUID_Type', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x01]), size=2, max_len=2, name='Server_Hardware_type', fuzzable=False)
+        s_bytes(value=bytes([0x1c, 0x39, 0x25, 0xe8]), size=4, max_len=4, name='Server_DUID_Time', fuzzable=True)
+        s_bytes(value=bytes([0x08, 0x00, 0x27, 0xd4,0x10, 0xbb]), size=6, max_len=6, name='Link_layer_address1',
+                fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x06]), size=2, max_len=2, name='option_request_option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x04]), size=2, max_len=2, name='option_request_length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x17]), size=2, max_len=2, name='Requested_Option_code', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x18]), size=2, max_len=2, name='Requested_Option_code1', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x08]), size=2, max_len=2, name='option_elapsed_time', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x02]), size=2, max_len=2, name='elapsed_time_length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x00]), size=2, max_len=2, name='Elapsed_time', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x19]), size=2, max_len=2, name='IAfPD_option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x29]), size=2, max_len=2, name='IAfPD_length', fuzzable=False)
+        s_bytes(value=bytes([0x27, 0xfe, 0x8f, 0x95]), size=4, max_len=4, name='IAfPD_IAID', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x00, 0x0e, 0x10]), size=4, max_len=4, name='IAfPD_T1', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x00, 0x15, 0x18]), size=4, max_len=4, name='IAfPD_T2', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x1a]), size=2, max_len=2, name='IA_option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x19]), size=2, max_len=2, name='IA_length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x00,0x1c,0x20]), size=4, max_len=4, name='IA_preferred_lifetime', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x00,0x1d,0x4c]), size=4, max_len=4, name='IA_Valid_lifetime', fuzzable=False)
+        s_bytes(value=bytes([0x40]), size=2, max_len=2, name='IA_Prefix_length', fuzzable=False)
+        s_bytes(value=bytes([0x20,0x01,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]), size=16, max_len=16, name='IA_Prefix_address', fuzzable=True)
+        session.connect(s_get('Request_XID'))
+        
+        
+def fuzzing_Release_XID(session):
+    s_initialize(name="Release_XID")
+    with s_block("IPv6"):
+        s_bytes(value=bytes([0x60]), size=1, max_len=1, name='Version', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x00, 0x00]), size=3, max_len=3, name='Traffic label', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x6b]), size=2, max_len=2, name='Payload Length', fuzzable=False)
+        s_bytes(value=bytes([0x11]), size=2, max_len=2, name='Next Header', fuzzable=False)
+        s_bytes(value=bytes([0x01]), size=1, max_len=1, name='Hop Limit', fuzzable=False)
+        s_bytes(value=bytes(src_ip), size=16, max_len=16, name='Source Address', fuzzable=False)
+        s_bytes(value=bytes([0xff,0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,0x00,0x02]), size=16, max_len=16, name='Destination Address', fuzzable=False)
+    with s_block("UDP"):
+        s_bytes(value=bytes([0x02, 0x22]), size=2, max_len=2, name='src_port', fuzzable=False)
+        s_bytes(value=bytes([0x02, 0x23]), size=2, max_len=2, name='dst_port', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x6b]), size=2, max_len=2, name='length', fuzzable=False)
+        s_bytes(value=bytes([0x81, 0xaf]), size=2, max_len=2, name='checksum', fuzzable=False)
+    with s_block(("DHCPv6")):
+        s_bytes(value=bytes([0x08]), size=1, max_len=1, name='Message_type', fuzzable=False)
+        s_bytes(value=bytes([0xc7,0x89,0xb0]), size=3, max_len=3, name='Transation_ID', fuzzable=False)
+        s_bytes(value=bytes([0x00,0x01]), size=2, max_len=2, name='option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x0e]), size=2, max_len=2, name='length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x01]), size=2, max_len=2, name='DUID_Type', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x01]), size=2, max_len=2, name='Hardware_type', fuzzable=False)
+        s_bytes(value=bytes([0x1c, 0x39, 0xcf, 0x88]), size=4, max_len=4, name='DUID_Time', fuzzable=False)
+        s_bytes(value=bytes([0x08, 0x00, 0x27, 0xfe, 0x8f, 0x95]), size=6, max_len=6, name='Link_layer_address',
+                fuzzable=True)
+        #server_identifier
+        s_bytes(value=bytes([0x00, 0x02]), size=2, max_len=2, name='Server_option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x0e]), size=2, max_len=2, name='Server_length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x01]), size=2, max_len=2, name='Server_DUID_Type', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x01]), size=2, max_len=2, name='Server_Hardware_type', fuzzable=False)
+        s_bytes(value=bytes([0x1c, 0x39, 0x25, 0xe8]), size=4, max_len=4, name='Server_DUID_Time', fuzzable=False)
+        s_bytes(value=bytes([0x08, 0x00, 0x27, 0xd4,0x10, 0xbb]), size=6, max_len=6, name='Link_layer_address1',
+                fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x06]), size=2, max_len=2, name='option_request_option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x04]), size=2, max_len=2, name='option_request_length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x17]), size=2, max_len=2, name='Requested_Option_code', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x18]), size=2, max_len=2, name='Requested_Option_code1', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x08]), size=2, max_len=2, name='option_elapsed_time', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x02]), size=2, max_len=2, name='elapsed_time_length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x00]), size=2, max_len=2, name='Elapsed_time', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x19]), size=2, max_len=2, name='IAfPD_option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x29]), size=2, max_len=2, name='IAfPD_length', fuzzable=False)
+        s_bytes(value=bytes([0x27, 0xfe, 0x8f, 0x95]), size=4, max_len=4, name='IAfPD_IAID', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x00, 0x00, 0x00]), size=4, max_len=4, name='IAfPD_T1', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x00, 0x00, 0x00]), size=4, max_len=4, name='IAfPD_T2', fuzzable=True)
+        s_bytes(value=bytes([0x00, 0x1a]), size=2, max_len=2, name='IA_option', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x19]), size=2, max_len=2, name='IA_length', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x00,0x00,0x00]), size=4, max_len=4, name='IA_preferred_lifetime', fuzzable=False)
+        s_bytes(value=bytes([0x00, 0x00,0x00,0x00]), size=4, max_len=4, name='IA_Valid_lifetime', fuzzable=False)
+        s_bytes(value=bytes([0x40]), size=2, max_len=2, name='IA_Prefix_length', fuzzable=False)
+        s_bytes(value=bytes([0x20,0x01,0x00,0x00,0x00,0x00,0xfe,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00]), size=16, max_len=16, name='IA_Prefix_address', fuzzable=False)
+    session.connect(s_get('Release_XID'))
+
+
+if __name__ == "__main__":
+    fuzzing_main()

@@ -1,0 +1,8 @@
+# JetBrains IDE 配置目录
+.idea/
+*.iml
+# Python 字节码缓存
+__pycache__/
+*.py[cod]  # 同时忽略 .pyc, .pyo, .pyd 文件
+*.db  # 数据库文件
+Testscript/boofuzz-results/*.db  # boofuzz 结果目录
